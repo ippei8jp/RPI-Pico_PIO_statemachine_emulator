@@ -1,5 +1,3 @@
-from config import STATEMACHINE_NUMBER
-
 class state_machine:
     """ this class emulates a state machine (sm) """
 
@@ -18,7 +16,7 @@ class state_machine:
         # You can still set the state_machine_number (in config.py) because it is used in some irq operations
 
         # the sm number (used in irq calculations)
-        self.sm_number = STATEMACHINE_NUMBER
+        self.sm_number = program_definitions['pio_sm_number']
         # the pio program and important parameters
         self.program = program_definitions['pio_program']
         self.wrap_target = program_definitions['pio_program_wrap_target']

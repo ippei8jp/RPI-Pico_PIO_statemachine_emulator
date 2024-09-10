@@ -1,5 +1,76 @@
 # Emulator of a Raspberry Pi Pico PIO state machine
 
+## 修正点 
+オリジナルに対して以下の変更を実施  
+
+### micropython 対応
+ファイルの書き方は``examples_mpy``ディレクトリを参照してください。  
+
+### 各種パラメータのコマンドラインオプション化
+``config.py``で指定していたパラメータをコマンドラインオプションに変更。  
+これに伴い、``config.py``を削除。  
+
+- ``SAVE_TEST_DATA`` の設定  
+  コマンドラインオプションの``--dump``で指定します。  
+  互換性のために残していますが、``--save --no-disp``の方が結果が見やすいです。  
+
+- ``EMULATION_STEPS`` の設定  
+  コマンドラインオプションの``--step=<STEP>``で指定します。  
+
+- ``STATEMACHINE_NUMBER`` の設定  
+  ``.pio.h``ファイル、ディレクトリを指定した場合は コマンドラインオプションの``--sm_number=<NUMBER>``で指定します。  
+  ``.py``ファイルを指定した場合は ``StateMachine``クラスのコンストラクタで指定します。
+
+### emulation対象ファイルの指定方法の変更
+以下の方法で指定できます。  
+- ``.pio.h`` ファイルを指定   
+  従来の3パラメータ指定時と同じ動作ですが、
+  ``c_program``と``pin_program``の指定は別途オプションで行います。  
+
+- ディレクトリを指定  
+  emulation対象ファイルは指定したディレクトリの*.pio.hファイルです。  
+  複数存在する場合はエラーになります。  
+  従来の1パラメータ指定時と同じ動作です。  
+
+- ``.py`` ファイルを指定  
+  micropython版PIO制御ソースを受け付けてemulationします。  
+
+### ``c_program``と``pin_program`` の指定方法の変更
+``c_program``と``pin_program`` の指定は ``--c_prog``、``--pin_prog``オプションで指定します。  
+それぞれのデフォルトは以下の通りです。  
+
+- ``.pio.h`` ファイルを指定した場合  
+  ``.pio.h`` ファイルと同じディレクトリの``c_program``と``pin_program``  
+
+- ディレクトリを指定した場合  
+  指定したディレクトリの``c_program``と``pin_program``  
+
+- ``.py`` ファイルを指定した場合  
+  ``.py`` ファイルと同じディレクトリの``.py``ファイルの拡張子を``.c_program``と``.pin_program``に変更したファイル  
+
+
+### 追加オプション
+- ``--save``  
+  emulation結果を保存します。  
+  ``--dump``オプションとほぼ同じですが、フォーマットはJSONで、結果をファイルに保存します。  
+  本オプション単独ではGUI表示も行います。  
+
+  保存ファイル名は以下の通りです。
+    - ``.pio.h`` ファイルを指定した場合  
+      ``.pio.h`` ファイルと同じディレクトリの``result.json``  
+
+    - ディレクトリを指定した場合  
+      指定したディレクトリの``result.json``  
+
+    - ``.py`` ファイルを指定した場合  
+      ``.py`` ファイルと同じディレクトリの``.py``ファイルの拡張子を``.json``に変更したファイル  
+
+- ``--no-disp``  
+  GUI表示を行いません。  
+  ``--save``オプションと組み合わせてバッチ処理で複数のエミュレーションを行うときに使用します。  
+
+以下、オリジナルの説明  
+
 ## What does it do
 This emulator allows you to step through the workings of a RPI Pico PIO state machine running PIO code. It is intended for running test cases and gain insight into how the code works.
 

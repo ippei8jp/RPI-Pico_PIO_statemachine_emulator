@@ -1,5 +1,4 @@
 from tkinter import Frame, Label, Text
-from config import STATEMACHINE_NUMBER
 
 def build_mid_frame(self):
     """ build the panel with the sm variables and settings """
@@ -76,7 +75,7 @@ def build_mid_frame(self):
     self.empty_label1.grid(row=grid_row, column=1, padx=(5, 5), sticky='W')
     grid_row += 1
     # IRQ
-    self.IRQ_label = Var_List_IRQ("IRQ (sm="+str(STATEMACHINE_NUMBER)+")", self.mid_frame, grid_row, 1, self.emulation_results, 3)
+    self.IRQ_label = Var_List_IRQ("IRQ (sm="+str(self.program_definitions['pio_sm_number'])+")", self.mid_frame, grid_row, 1, self.emulation_results, 3)
     grid_row += 1
 
     # pin configuration section label
