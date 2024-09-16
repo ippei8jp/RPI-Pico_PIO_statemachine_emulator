@@ -11,7 +11,7 @@
             "program": "main.py",
             "justMyCode": false,
             "args": [
-                "examples_mpy\\side_step.py"
+                "examples2_mpy\\SteppingMotor_set.py"
             ],
             "cwd" : "${workspaceFolder}\\state_machine_emulator",
             "console": "integratedTerminal"

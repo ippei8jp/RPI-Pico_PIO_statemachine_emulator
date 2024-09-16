@@ -1,0 +1,5 @@
+# timestamp, command, arguments of command
+  0, put, 0x001f000f
+100, put, 0x000f000e
+200, put, 0x001f0001
+
