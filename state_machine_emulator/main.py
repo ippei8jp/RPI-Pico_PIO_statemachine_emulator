@@ -44,17 +44,17 @@ def process_file_pio_h(filename, c_program):
                     pass
                 elif ".length" in line:
                     d = line.strip().split('=')
-                    pio_program_length = int(d[1].replace(',', ''))
+                    pio_program_length = int(d[1].replace(',', ''), 0)
                 elif ".origin" in line: # note: origin is not actually used
                     d = line.strip().split('=')
-                    pio_program_origin = int(d[1].replace(',', ''))
+                    pio_program_origin = int(d[1].replace(',', ''), 0)
                 elif "#define" in line:
                     if "wrap_target" in line:
                         d = line.strip().split(' ')
-                        pio_program_wrap_target = int(d[2])
+                        pio_program_wrap_target = int(d[2], 0)
                     elif "wrap" in line:
                         d = line.strip().split(' ')
-                        pio_program_wrap = int(d[2])
+                        pio_program_wrap = int(d[2], 0)
                 elif "static const uint16_t" in line:
                     line = pio_file.readline()
                     while '};' not in line:
@@ -68,7 +68,7 @@ def process_file_pio_h(filename, c_program):
                     while '}' not in line2:
                         if 'sm_config_set_sideset' in line2:
                             parts = line2.split(',')
-                            a1 = int(parts[1].strip())
+                            a1 = int(parts[1].strip(), 0)
                             c_program.append([0, 'sideset_count', a1])
                             a2 = parts[2].strip().lower() == 'true'
                             c_program.append([0, 'sideset_opt', a2])
@@ -101,8 +101,8 @@ def process_file_pin_program(filename, pin_program):
                     parts = line.split(',')
                     parts[1] = parts[1].strip()
                     if parts[1] in allowed_parts1:
-                        parts[0] = int(parts[0])   # time at which the command should be run
-                        parts[2] = int(parts[2])   # argument of the command
+                        parts[0] = int(parts[0], 0)   # time at which the command should be run
+                        parts[2] = int(parts[2], 0)   # argument of the command
                         pin_program.append(parts)
                     else:
                         print("Warning: Unknown command in pin_program: ", parts, 'continuing anyway')
@@ -128,7 +128,7 @@ def process_file_c_program(filename, c_program):
                     parts[1] = parts[1].strip()
                     # check if the command is valid 
                     if parts[1].strip() in ['put', 'get', 'set_base', 'set_count', 'in_base', 'jmp_pin', 'sideset_base', 'out_base', 'out_count', 'out_shift_right', 'out_shift_autopull', 'pull_threshold', 'in_shift_right', 'in_shift_autopush', 'push_threshold', 'get_pc', 'set_pc', 'irq', 'set_N', 'status_sel', 'dir_out', 'dir_in', 'dir_non']:
-                        parts[0] = int(parts[0])
+                        parts[0] = int(parts[0], 0)
                         parts[1] = parts[1]
                         if len(parts) == 3:
                             parts[2] = parts[2].strip()
@@ -138,7 +138,7 @@ def process_file_c_program(filename, c_program):
                             elif parts[2] in ["False", "false", "No", "no"]:
                                 parts[2] = False
                             else:
-                                parts[2] = int(parts[2])
+                                parts[2] = int(parts[2], 0)
                         c_program.append(parts)
                     else:
                         print("Warning: Unknown command in c_program: ", parts, "continuing anyway")
