@@ -4,7 +4,7 @@ from tkinter import Frame, Label, Listbox, Text
 def build_output_frame(self):
     """ build the frame with the output (of c-statements) of the emulation """
     # the output frame
-    self.output_frame = Frame(self.root, width=425, height=725)
+    self.output_frame = Frame(self.root, width=425, height=675)
     self.output_frame.grid(row=1, column=3, padx=0, pady=2)
     self.output_frame.grid_propagate(0)
 

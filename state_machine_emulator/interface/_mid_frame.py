@@ -6,7 +6,7 @@ def build_mid_frame(self):
     from interface._tooltips import CreateToolTip
 
     # In the middle
-    self.mid_frame = Frame(self.root, width=460, height=725)
+    self.mid_frame = Frame(self.root, width=460, height=675)
     self.mid_frame.grid(row=1, column=1, padx=0, pady=2)
     self.mid_frame.grid_propagate(0)
 
