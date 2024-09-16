@@ -10,6 +10,7 @@ class Emulator_Interface(Thread):
     from ._mid_frame import build_mid_frame, update_mid_frame
     from ._right_frame import build_right_frame, update_right_frame
     from ._output_frame import build_output_frame, update_output_frame
+    from ._wave_frame import build_wave_frame, update_wave_frame,change_current_position
 
     def __init__(self, program_definitions, pin_program, c_program, emulation_results, emulation_output_c_program):
         """ build and run the GUI """
@@ -42,6 +43,7 @@ class Emulator_Interface(Thread):
         self.build_mid_frame()
         self.build_right_frame()
         self.build_output_frame()
+        self.build_wave_frame()
 
         # update the display to reflect the data of self.current_clock=0
         self.update_display()
@@ -70,3 +72,4 @@ class Emulator_Interface(Thread):
         self.update_mid_frame()
         self.update_right_frame()
         self.update_output_frame()
+        self.update_wave_frame()
