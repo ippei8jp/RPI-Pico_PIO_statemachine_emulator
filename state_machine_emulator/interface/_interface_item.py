@@ -36,7 +36,7 @@ class Interface_Item:
         self.value_label.insert("end", new_value)
         # disallow changing the text, justify right
         self.value_label.configure(state="disabled")
-        self.value_label.tag_configure("j_right", justify='right')
+        self.value_label.tag_configure("j_right", justify='left')
         self.value_label.tag_add("j_right", 1.0, "end")
         # now apply colors, using tags "changed and "unchanged", e.g. to the last 32 characters (the binary representation)
         len_string = min(len(new_value), len(old_value), 32)
@@ -52,14 +52,17 @@ class Var_Bits_32(Interface_Item):
         self.var_name = var_name
         self.var = var
         self.var_index = var_index
-        super().__init__(frame, display_name, row, col, 45)
+        super().__init__(frame, display_name, row, col, 53)
 
     def value_string(self, clock):
-        value_string = str(self.var[clock][self.var_index][self.var_name] & 0xFFFFFFFF) + " = "
+        value_string = ""
         value = self.var[clock][self.var_index][self.var_name]
         # extend the value_string based on bits in 'value' 
         for i in reversed(range(32)):
             value_string += "0" if (value & (1 << i)) == 0 else "1"
+            value_string += "_" if i % 4 == 0 and i != 0 else ""   # 4桁毎に"_"を挿入
+        # value_string +=  " = " + str(self.var[clock][self.var_index][self.var_name] & 0xFFFFFFFF)
+        value_string += f" = {self.var[clock][self.var_index][self.var_name] & 0xFFFFFFFF : >10d}"
         return value_string
 
 
@@ -69,7 +72,7 @@ class Pin_Settings_32(Interface_Item):
         self.count_name = count_name
         self.var = var
         self.var_index = var_index
-        super().__init__(frame, display_name, row, col, 40)
+        super().__init__(frame, display_name, row, col, 53)
 
     def value_string(self, clock):
         base = self.var[clock][self.var_index][self.base_name]
@@ -85,6 +88,7 @@ class Pin_Settings_32(Interface_Item):
         for i in range(count-1):
             value_string_list[31-(base+1+i) % 32] = 'C'
         value_string = ''.join(value_string_list)
+        value_string = '_'.join(value_string[i:i+4] for i in range(0, len(value_string), 4))    # 4桁毎に"_"を挿入
         return value_string
 
 
@@ -92,11 +96,13 @@ class Var_List_IRQ(Interface_Item):
     def __init__(self, display_name, frame, row, col, var, var_index):
         self.var = var
         self.var_index = var_index
-        super().__init__(frame, display_name, row, col, 40)
+        super().__init__(frame, display_name, row, col, 53)
 
     def value_string(self, clock):
         value_string = ""
-        for v in reversed(self.var[clock][self.var_index]):
+        l = len(self.var[clock][self.var_index])
+        for i, v in enumerate(reversed(self.var[clock][self.var_index])):
+            value_string += "_" if (l-i) % 4 == 0 and i != 0 else ""   # 4桁毎に"_"を挿入
             value_string += "1" if v==1 else "0" if v==0 else "."
         return value_string
 
@@ -104,12 +110,13 @@ class Var_List(Interface_Item):
     def __init__(self, display_name, frame, row, col, var, var_index):
         self.var = var
         self.var_index = var_index
-        super().__init__(frame, display_name, row, col, 40)
+        super().__init__(frame, display_name, row, col, 53)
 
     def value_string(self, clock):
         value_string = ""
         for v in reversed(self.var[clock][0][self.var_index]):
             value_string += "1" if v==1 else "0" if v==0 else "."
+        value_string = '_'.join(value_string[i:i+4] for i in range(0, len(value_string), 4))    # 4桁毎に"_"を挿入
         return value_string
 
 
@@ -123,7 +130,7 @@ class Interface_Item_Listbox_Bits:
             "The data in TxFIFO is transmitted from the normal core to the state machine.\n"
             "The data in RxFIFO is transmitted from the state machine to the normal core. ")
         label.grid(row=row, column=col, padx=(5, 5), sticky='W')
-        self.value_listbox = Listbox(frame, height=4, width=45, justify="right", exportselection=0)
+        self.value_listbox = Listbox(frame, height=4, width=55, justify="left", exportselection=0)
         for index in range(4):
             self.value_listbox.insert("end", self.value_string(index, clock))
         self.value_listbox.grid(row=row+1, column=0, padx=(5, 5))
@@ -135,10 +142,13 @@ class Interface_Item_Listbox_Bits:
             self.value_listbox.insert("end", self.value_string(index, clock))
 
     def value_string(self, index, clock):
-        value_string = str(self.var[clock][1][self.var_name][index] & 0xFFFFFFFF) + " = "
+        value_string = ""
         value = self.var[clock][1][self.var_name][index]
         for i in reversed(range(32)):
             value_string += "0" if (value & (1 << i)) == 0 else "1"
+            value_string += "_" if i % 4 == 0 and i != 0 else ""   # 4桁毎に"_"を挿入
+        # value_string += " = " + str(self.var[clock][1][self.var_name][index] & 0xFFFFFFFF)
+        value_string += f" = {self.var[clock][1][self.var_name][index] & 0xFFFFFFFF : >10d}"
         return value_string
 
 
@@ -148,7 +158,7 @@ class Interface_Item_Listbox_Time:
         self.var = var
         label = Label(frame, text=display_name)
         label.grid(row=row, column=col, padx=(5, 5), sticky='W')
-        self.value_listbox = Listbox(frame, height=13, width=45, exportselection=0)
+        self.value_listbox = Listbox(frame, height=13, width=55, exportselection=0)
         for index in range(len(var)):
             self.value_listbox.insert("end", self.value_string(index))
         self.value_listbox.grid(row=row+1, column=0, padx=(5, 5))

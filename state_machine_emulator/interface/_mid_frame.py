@@ -5,15 +5,17 @@ def build_mid_frame(self):
     from interface._interface_item import Var_Bits_32, Var_List_IRQ, Var_List, Pin_Settings_32
     from interface._tooltips import CreateToolTip
 
+    frame_width = 550
+
     # In the middle
-    self.mid_frame = Frame(self.root, width=460, height=675)
+    self.mid_frame = Frame(self.root, width=frame_width, height=675)
     self.mid_frame.grid(row=1, column=1, padx=0, pady=2)
     self.mid_frame.grid_propagate(0)
 
     grid_row = 2
 
     # make a separate frame for some data items (clock, pc, delay, status)
-    self.clk_pc_delay_stat_frame = Frame(self.mid_frame, width=460, height=25)
+    self.clk_pc_delay_stat_frame = Frame(self.mid_frame, width=frame_width, height=25)
     self.clk_pc_delay_stat_frame.grid(row=grid_row, column=1, padx=0, pady=5)
     self.clk_pc_delay_stat_frame.grid_propagate(0)
     self.clk_pc_delay_stat_frame.grid_columnconfigure(index=0, weight=1)
@@ -40,7 +42,7 @@ def build_mid_frame(self):
     grid_row += 1
 
     # make a separate frame for some data items (OSR and ISR shift counters)
-    self.OSR_ISR_shift_counters_frame = Frame(self.mid_frame, width=460, height=25)
+    self.OSR_ISR_shift_counters_frame = Frame(self.mid_frame, width=frame_width, height=25)
     self.OSR_ISR_shift_counters_frame.grid(row=grid_row, column=1, padx=0, pady=0)
     self.OSR_ISR_shift_counters_frame.grid_propagate(0)
     self.OSR_ISR_shift_counters_frame.grid_columnconfigure(index=0, weight=1)
@@ -129,7 +131,7 @@ def build_mid_frame(self):
         label.insert("end", s)
         label.configure(font="TkFixedFont", state="disabled")
         label.grid(row=grid_row, column=1, padx=(5, 5), sticky='W')
-        self.settings_labels[i] = Text(self.mid_frame, height=1, width=35)
+        self.settings_labels[i] = Text(self.mid_frame, height=1, width=45)
         self.settings_labels[i].insert("end", str(settings[s]))
         self.settings_labels[i].configure(font="TkFixedFont", state="disabled")
         self.settings_labels[i].grid(row=grid_row, column=1, padx=(5, 5), sticky='E')

@@ -13,8 +13,8 @@ def build_output_frame(self):
     self.program_label.grid(row=2, column=3, padx=(5, 5), sticky='W')
 
     # program output is in a listbox
-    self.output_listbox = Listbox(self.output_frame, height=26, width=50, justify="right", exportselection=0)
-    self.output_listbox.grid(row=3, column=3, padx=(5, 5), sticky='E')
+    self.output_listbox = Listbox(self.output_frame, height=26, width=55, justify="right", exportselection=0)
+    self.output_listbox.grid(row=3, column=3, padx=(5, 5), sticky='W')
 
     # put the c-program into the listbox (in update_output_frame the current line will be highlighted (selected) in the GUI)
     for line in self.emulation_output_c_program:
@@ -26,7 +26,7 @@ def build_output_frame(self):
 
     # messages
     self.messages_text = Text(self.output_frame, height=11, width=50, exportselection=0)
-    self.messages_text.grid(row=5, column=3, padx=(5, 5), sticky='E')
+    self.messages_text.grid(row=5, column=3, padx=(5, 5), sticky='W')
 
 
 def update_output_frame(self):
