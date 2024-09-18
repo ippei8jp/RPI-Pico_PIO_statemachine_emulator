@@ -104,7 +104,7 @@ class WaveformDiagram :
         for idx in range(len(self.check_val)):
             if self.check_val[idx].get():
                 checked_button_list.append(idx)
-        print(f'{checked_button_list=}')
+        # print(f'{checked_button_list=}')
         
         # 新しくグラフを表示
         self.DrawWaveform(checked_button_list, self.cursor_position)
