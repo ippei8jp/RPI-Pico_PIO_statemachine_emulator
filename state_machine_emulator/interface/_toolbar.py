@@ -1,4 +1,4 @@
-from tkinter import Frame, Button
+from tkinter import Frame, Button, BooleanVar, Checkbutton
 
 """
     build the toolbar with associated call back functions and key bindings
@@ -130,6 +130,13 @@ def build_toolbar(self):
 
     self.step_50_button = Button(self.toolbar, text="step 50", command=lambda: self.step_50_callback())
     self.step_50_button.pack(side="left", fill="none")
+
+    def hex_check_btn_callback() :
+        self.update_mid_frame()
+    
+    self.hex_check_val = BooleanVar()
+    self.hex_check_btn = Checkbutton(self.toolbar, text="HEX", variable=self.hex_check_val, command=self.update_display)
+    self.hex_check_btn.pack(side="left")
 
     self.quit_button = Button(self.toolbar, text="Quit", command=lambda: self.quit_callback(None))
     self.quit_button.pack(side="right", fill="none")

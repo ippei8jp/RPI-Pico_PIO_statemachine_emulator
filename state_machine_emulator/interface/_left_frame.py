@@ -32,8 +32,8 @@ def build_left_frame(self):
 def update_left_frame(self):
     """ update the left frame """
     # update the Tx and Rx FIFOs
-    self.TxFIFO_listbox.update(self.current_clock)
-    self.RxFIFO_listbox.update(self.current_clock)
+    self.TxFIFO_listbox.update(self.current_clock, self.hex_check_val.get())
+    self.RxFIFO_listbox.update(self.current_clock, self.hex_check_val.get())
 
     # highlight the just executed pin_program statements
     self.pin_program_listbox.value_listbox.selection_clear(0, "end")
