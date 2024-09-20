@@ -1,5 +1,11 @@
 # Emulator of a Raspberry Pi Pico PIO state machine
 
+## 準備
+``matplotlib``を使用するので、あらかじめインストールしておいてください。
+```
+pip install matplotlib
+```
+
 ## 修正点 
 オリジナルに対して以下の変更を実施  
 
