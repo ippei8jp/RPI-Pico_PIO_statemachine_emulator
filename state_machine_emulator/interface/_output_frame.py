@@ -1,10 +1,10 @@
 from tkinter import Frame, Label, Listbox, Text
 
 
-def build_output_frame(self):
+def build_output_frame(self, frame_width, frame_height):
     """ build the frame with the output (of c-statements) of the emulation """
     # the output frame
-    self.output_frame = Frame(self.root, width=425, height=675)
+    self.output_frame = Frame(self.root, width=frame_width, height=frame_height)
     self.output_frame.grid(row=1, column=3, padx=0, pady=2)
     self.output_frame.grid_propagate(0)
 

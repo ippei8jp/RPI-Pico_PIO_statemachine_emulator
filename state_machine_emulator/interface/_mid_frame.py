@@ -1,14 +1,12 @@
 from tkinter import Frame, Label, Text
 
-def build_mid_frame(self):
+def build_mid_frame(self, frame_width, frame_height):
     """ build the panel with the sm variables and settings """
     from interface._interface_item import Var_Bits_32, Var_List_IRQ, Var_List, Pin_Settings_32
     from interface._tooltips import CreateToolTip
 
-    frame_width = 550
-
     # In the middle
-    self.mid_frame = Frame(self.root, width=frame_width, height=675)
+    self.mid_frame = Frame(self.root, width=frame_width, height=frame_height)
     self.mid_frame.grid(row=1, column=1, padx=0, pady=2)
     self.mid_frame.grid_propagate(0)
 

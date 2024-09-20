@@ -1,12 +1,12 @@
 from tkinter import Frame
 
 
-def build_left_frame(self):
+def build_left_frame(self, frame_width, frame_height):
     """ build the panel on the left with the c-program, pin_program, and the TxFIFO and RxFIFO """
     from interface._interface_item import Interface_Item_Listbox_Bits, Interface_Item_Listbox_Time
 
     # on the left side
-    self.left_frame = Frame(self.root, width=400, height=675)
+    self.left_frame = Frame(self.root, width=frame_width, height=frame_height)
     self.left_frame.grid(row=1, column=0, padx=0, pady=2)
     self.left_frame.grid_propagate(0)
 

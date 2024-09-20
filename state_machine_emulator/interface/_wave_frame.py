@@ -2,9 +2,9 @@ from tkinter import Frame, Label, Listbox, Text
 
 from .WaveformDiagram import WaveformDiagram
 
-def build_wave_frame(self):
+def build_wave_frame(self, frame_width, frame_height):
     """ build the frame with the waveform of the emulation """
-    window_size = ((375 + 460 + 305 + 425), 250)
+    window_size = (frame_width, frame_height)
     # the wave frame
     self.wave_frame = Frame(self.root, width=window_size[0], height=window_size[1])
     self.wave_frame.grid(row=2, column=0, columnspan=4)

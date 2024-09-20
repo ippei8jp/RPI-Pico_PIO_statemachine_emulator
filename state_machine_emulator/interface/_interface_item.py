@@ -141,7 +141,8 @@ class Interface_Item_Listbox_Bits:
         label = Label(frame, text=display_name + ' \u24D8')
         CreateToolTip(label, \
             "The data in TxFIFO is transmitted from the normal core to the state machine.\n"
-            "The data in RxFIFO is transmitted from the state machine to the normal core. ")
+            "The data in RxFIFO is transmitted from the state machine to the normal core. ",
+            offset_x=80, offset_y=20, label_conf={'wraplength': -1})
         label.grid(row=row, column=col, padx=(5, 5), sticky='W')
         self.value_listbox = Listbox(frame, height=4, width=55, justify="left", exportselection=0)
         for index in range(4):

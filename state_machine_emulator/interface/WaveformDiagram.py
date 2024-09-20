@@ -10,6 +10,8 @@ np.set_printoptions(threshold=np.inf)
 
 import tkinter as tk
 
+from ._tooltips import CreateToolTip
+
 # ズーム/パンの処理クラス
 from .ZoomPan import ZoomPan
 
@@ -25,7 +27,9 @@ class WaveformDiagram :
         self.change_current_position=change_current_position
         
         # カーソルポジション
-        self.cursor_position = 0
+        self.cursor_cur = 0
+        self.cursor_A = 0
+        self.cursor_B = 0
         
         # 表示するデータ
         self.y_datas = np.array(gpio_data).transpose()  # [時間, チャネル]を[チャネル, 時間]に変換
@@ -34,6 +38,9 @@ class WaveformDiagram :
         
         # ツールバーを生成
         self.frame_toolbar = self.build_toolbar()
+        
+        # ステータスバーを生成
+        self.frame_statusbar = self.build_statusbar()
         
         # スクロール可能なキャンバスを生成
         self.canvas = ScrollableCanvas(self.master, width=self.canvas_size[0], height=self.canvas_size[1])
@@ -62,30 +69,145 @@ class WaveformDiagram :
         frame_toolbar.pack(side=tk.TOP, fill=tk.X)
         
         return frame_toolbar
+
+
+    # =================================================================
+    # ステータスバーの作成
+    def build_statusbar(self) :
+        frame_statusbar = tk.Frame(self.master)
+        
+        # =================================================================
+        # カーソル位置情報
+        label = tk.Label(frame_statusbar, text="cursor \u24D8", width=10)
+        label.pack(side=tk.LEFT)
+        CreateToolTip(label, 
+            "cursor current (RED)   : Double click to move.\n" 
+            "cursor A       (GREEN) : CTRL+click to move.\n" 
+            "cursor B       (BLUE)  : SHIFT+click to move.", 
+            offset_x=80, offset_y=-50, label_conf={'wraplength': -1})
+        
+        label = tk.Label(frame_statusbar, text="cur(RED):", width=10)
+        label.pack(side=tk.LEFT)
+        self.status_cursor_cur = tk.IntVar()
+        label = tk.Label(frame_statusbar, textvariable=self.status_cursor_cur, width=7)
+        label.pack(side=tk.LEFT)
+
+        label = tk.Label(frame_statusbar, text="A(GREEN):", width=10)
+        label.pack(side=tk.LEFT)
+        self.status_cursor_A = tk.IntVar()
+        label = tk.Label(frame_statusbar, textvariable=self.status_cursor_A, width=7)
+        label.pack(side=tk.LEFT)
+
+        label = tk.Label(frame_statusbar, text="B(BLUE):", width=10)
+        label.pack(side=tk.LEFT)
+        self.status_cursor_B = tk.IntVar()
+        label = tk.Label(frame_statusbar, textvariable=self.status_cursor_B, width=7)
+        label.pack(side=tk.LEFT)
+
+        label = tk.Label(frame_statusbar, text="C-A:", width=5)
+        label.pack(side=tk.LEFT)
+        self.status_AC = tk.IntVar()
+        label = tk.Label(frame_statusbar, textvariable=self.status_AC, width=7)
+        label.pack(side=tk.LEFT)
+
+        label = tk.Label(frame_statusbar, text="C-B:", width=5)
+        label.pack(side=tk.LEFT)
+        self.status_BC = tk.IntVar()
+        label = tk.Label(frame_statusbar, textvariable=self.status_BC, width=7)
+        label.pack(side=tk.LEFT)
+
+        label = tk.Label(frame_statusbar, text="B-A:", width=5)
+        label.pack(side=tk.LEFT)
+        self.status_BA = tk.IntVar()
+        label = tk.Label(frame_statusbar, textvariable=self.status_BA, width=7)
+        label.pack(side=tk.LEFT)
+
+        # ステータスバーを配置
+        frame_statusbar.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # ステータスバーに値を表示
+        self.update_statusbar()
+        
+        return frame_statusbar
+
+    # =================================================================
+    # ステータスバーの更新
+    def update_statusbar(self) :
+        self.status_cursor_cur.set(self.cursor_cur)
+        self.status_cursor_A.set(self.cursor_A)
+        self.status_cursor_B.set(self.cursor_B)
+        self.status_AC.set(self.cursor_A - self.cursor_cur)
+        self.status_BC.set(self.cursor_B - self.cursor_cur)
+        self.status_BA.set(self.cursor_B - self.cursor_A)
     
     # =================================================================
     # カーソルの描画
-    def disp_cursor(self, new_cursor_position, force=False) :
+    def disp_cursor(self, new_cursor_position, kind=0, force=False) :
+                    # kind : 0: カレントカーソル  1: Aカーソル  2: Bカーソル
         # 範囲外に出ないようチェック
         new_cursor_position = new_cursor_position if new_cursor_position > 0 else 0
         new_cursor_position = new_cursor_position if new_cursor_position < self.sumple_num else self.sumple_num
+        if kind == 0:
+            old_cursor_position = self.cursor_cur
+            cursor_color = "red"
+            # 他のカーソルと重なっていたときの対策
+            if old_cursor_position == self.cursor_A :
+                old_cursor_color, old_alfa = "green", 0.3
+            elif old_cursor_position == self.cursor_B :
+                old_cursor_color, old_alfa = "blue", 0.3
+            else :
+                old_cursor_color, old_alfa = "white", 1
+        elif kind == 1:
+            old_cursor_position = self.cursor_A
+            cursor_color = "green"
+            # 他のカーソルと重なっていたときの対策
+            if old_cursor_position == self.cursor_cur :
+                old_cursor_color, old_alfa = "red", 0.3
+            elif old_cursor_position == self.cursor_B :
+                old_cursor_color, old_alfa = "blue", 0.3
+            else :
+                old_cursor_color, old_alfa = "white", 1
+        elif kind == 2:
+            old_cursor_position = self.cursor_B
+            cursor_color = "blue"
+            # 他のカーソルと重なっていたときの対策
+            if old_cursor_position == self.cursor_cur :
+                old_cursor_color, old_alfa = "red", 0.3
+            elif old_cursor_position == self.cursor_A :
+                old_cursor_color, old_alfa = "green", 0.3
+            else :
+                old_cursor_color, old_alfa = "white", 1
+        else :
+            print(f'disp_cursor : Unknown cursor type ({kind})')
+            return
         
-        if self.cursor_position != new_cursor_position or force:
+        if old_cursor_position != new_cursor_position or force:
             # カーソル位置が変更された
             if len(self.axs) > 0 :
+                # グラフが表示されている
                 for ax in self.axs :
                     # 前のカーソルを消す
-                    if self.cursor_position is not None :
-                        ax.axvspan(self.cursor_position, self.cursor_position+1, color="white", alpha=1)
+                    if old_cursor_position is not None :
+                         # 一度消してから
+                        ax.axvspan(old_cursor_position, old_cursor_position+1, color="white", alpha=1)
+                        # 描く
+                        ax.axvspan(old_cursor_position, old_cursor_position+1, color=old_cursor_color, alpha=old_alfa)
                     # 新しいカーソルを描画
-                    ax.axvspan(new_cursor_position, new_cursor_position+1, color="red", alpha=0.3)
+                    ax.axvspan(new_cursor_position, new_cursor_position+1, color=cursor_color, alpha=0.3)
                     
                 # 再描画
                 self.axs[0].get_figure().canvas.draw()
             
             # 現在位置変更
-            self.cursor_position = new_cursor_position
+            if kind == 0:
+                self.cursor_cur = new_cursor_position
+            elif kind == 1:
+                self.cursor_A = new_cursor_position
+            elif kind == 2:
+                self.cursor_B = new_cursor_position
             
+            # ステータスバーの更新
+            self.update_statusbar()
     
     # =================================================================
     # ダブルクリックの処理
@@ -95,7 +217,29 @@ class WaveformDiagram :
             if self.change_current_position : 
                 self.change_current_position(int(event.xdata))
             else :
-                self.disp_cursor(int(event.xdata))
+                # カレントカーソルを描画
+                self.disp_cursor(int(event.xdata), kind=0)
+    
+    # =================================================================
+    # Ctrl+クリックの処理
+    def ctrl_click_handler(self, event) :
+        # print(f'ctrl_click_handler : {event.xdata=}')
+        if event.xdata is not None :
+            # Aカーソルを描画
+            self.disp_cursor(int(event.xdata), kind=1)
+    
+    # =================================================================
+    # Alt+クリックの処理
+    def alt_click_handler(self, event) :
+        print(f'alt_click_handler : {event.xdata=}')
+    
+    # =================================================================
+    # Shift+クリックの処理
+    def shift_click_handler(self, event) :
+        # print(f'shift_click_handler : {event.xdata=}')
+        if event.xdata is not None :
+            # Bカーソルを描画
+            self.disp_cursor(int(event.xdata), kind=2)
     
     # =================================================================
     # updateボタンの処理
@@ -107,7 +251,7 @@ class WaveformDiagram :
         # print(f'{checked_button_list=}')
         
         # 新しくグラフを表示
-        self.DrawWaveform(checked_button_list, self.cursor_position)
+        self.DrawWaveform(checked_button_list, self.cursor_cur)
     
     
     # =================================================================
@@ -130,19 +274,25 @@ class WaveformDiagram :
             label.pack(side=tk.TOP)
             
             # カーソル位置の初期化だけしておく
-            self.disp_cursor(cursor_pos, force=True)
+            self.disp_cursor(cursor_pos, kind=0, force=True)
             
             return
         
         # figureとsubplotの生成
+        # fig_widthは 厳密にはself.canvas.child_frameの幅から計算するべきだが、
+        # 貼り付け時に微調整されるのでself.canvas_sizeから計算する
+        # fig_heightは 見栄えがおかしくない(と思われる)値をトライアンドエラーで選んだ
+        fig_dpi = 100.0
+        fig_width = self.canvas_size[0] / fig_dpi 
+        fig_height = self.channel_num * 0.6 if self.channel_num > 2 else 1.8
+
         # plt.figure()を使うとtk.checkbutton()が正常に動作しなくなる
-        # 代わりにFigure()を使う
+        # 代わりにmatplotlib.figure.Figureを使う
         # plt.subplots()は便利なんだけど、↑の件で使えない
-        # self.fig, axs = plt.subplots(self.channel_num, 1, figsize=(15.0, self.channel_num * 0.6), sharex=True)
+        # self.fig, axs = plt.subplots(self.channel_num, 1, figsize=(fig_width, fig_height), sharex=True)
         # figure()してからadd_subplot()するように変更し、plt.figure()をFigure()に変更
-        # self.fig = plt.figure(figsize=(15.0, self.channel_num * 0.6))
-        # self.fig = Figure(figsize=(15.0, self.channel_num * 0.6))   # 幅はTk.Frameに貼り付けたときに調整されるので大体あってれば良い
-        self.fig = Figure(figsize=(15.0, self.channel_num * 0.6 if self.channel_num > 2 else 1.8))   # 幅はTk.Frameに貼り付けたときに調整されるので大体あってれば良い
+        # self.fig = plt.figure(figsize=(fig_width, fig_height))
+        self.fig = Figure(figsize=(fig_width, fig_height), dpi=fig_dpi)
         for idx in range(self.channel_num) :
             self.axs.append(self.fig.add_subplot(self.channel_num, 1, idx + 1, sharex=self.axs[0] if idx != 0 else None))
         
@@ -192,7 +342,14 @@ class WaveformDiagram :
 
         # =================================================================
         # ズーム/移動処理登録()
-        self.zp = ZoomPan(self.axs, self.doubleclick_handler)
+        
+        handlers = {
+                "doubleclick" : self.doubleclick_handler,
+                "ctrl_click"  : self.ctrl_click_handler,
+                #"alt_click"   : self.alt_click_handler,
+                "shift_click" : self.shift_click_handler,
+            }
+        self.zp = ZoomPan(self.axs, handlers)
         
         # =================================================================
         # グラフを張り付け
@@ -200,7 +357,7 @@ class WaveformDiagram :
         graph_canvas.get_tk_widget().pack(side=tk.TOP, anchor=tk.NW, fill=tk.NONE, expand=False)
         
         # カーソル位置の描画
-        self.disp_cursor(cursor_pos, force=True)
+        self.disp_cursor(cursor_pos, kind=0, force=True)
 
         # canvasを描画
         graph_canvas.draw()

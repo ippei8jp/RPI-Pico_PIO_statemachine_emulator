@@ -1,10 +1,10 @@
 from tkinter import Frame, Label, Listbox
 
 
-def build_right_frame(self):
+def build_right_frame(self, frame_width, frame_height):
     """ build the panel with the pio program """
     # on the right side
-    self.right_frame = Frame(self.root, width=305, height=675)
+    self.right_frame = Frame(self.root, width=frame_width, height=frame_height)
     # self.right_frame = Frame(self.root, width=345, height=675)
     self.right_frame.grid(row=1, column=2, padx=0, pady=2)
     self.right_frame.grid_propagate(0)

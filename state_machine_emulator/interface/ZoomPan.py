@@ -2,16 +2,21 @@ from matplotlib.backend_bases import MouseButton
 import numpy as np
 
 class ZoomPan:
-    def __init__(self,axs, doubleclick_handler=None):
+    def __init__(self,axs, handlers=None):
         self.cur_xlim = None
         self.xpress = None
         self.ctrl_press = False
+        self.alt_press = False
+        self.shift_press = False
         self.axs = axs
         # オリジナルのビュー範囲
         self.orig_xlim = axs[0].get_xlim()
         
-        # ダブルクリック処理
-        self.doubleclick_handler = doubleclick_handler
+        # クリック処理の外部ハンドラ
+        if not isinstance(handlers, dict) :
+            print("ZoomPan : handlers is not dictionary. Ignore.") 
+            handlers = {}
+        self.handlers = handlers
 
         # 各イベント処理を登録
         self.zoom_factory(axs[0],base_scale=1.1)
@@ -75,41 +80,22 @@ class ZoomPan:
     def key_factory(self,ax):
         def onPress(event):
             # print(f'key_factory.onPress() : {vars(event)}')
-            if event.key == "control":              # コントロールキーが押された
+            if event.key == "control":              # CTRLキーが押された
                 self.ctrl_press = True
-            elif event.key == "r":                  # rキーが押された
-                # reset zoom
-                # 最初のビュー範囲を設定
-                ax.set_xlim(self.orig_xlim)
-                
-                # 再描画
-                ax.figure.canvas.draw()
-            """
-            elif (event.key == "f") or (event.key == "d"):                  # f/dキーが押された
-                global aux_line_x
-                # 現在位置の表示(axvspanで背景に色付け)
-                old_aux_line_x = aux_line_x
-                if event.key == "d":                # dキーが押された
-                    aux_line_x -= 10
-                    aux_line_x = aux_line_x if aux_line_x > 0 else 0
-                else :                              # fキーが押された
-                    aux_line_x += 10
-                    aux_line_x = aux_line_x if aux_line_x < num_sumple else num_sumple
-                print(aux_line_x)
-                if old_aux_line_x != aux_line_x :
-                    for x in self.axs :
-                        x.axvspan(old_aux_line_x, old_aux_line_x+1, color="white", alpha=1)
-                        x.axvspan(aux_line_x, aux_line_x+1, color="red", alpha=0.3)
-                    
-                    # 再描画
-                    ax.figure.canvas.draw()
-            """
+            elif event.key == "alt":                # ALTキーが押された
+                self.alt_press = True
+            elif event.key == "shift":              # SHIFTキーが押された
+                self.shift_press = True
 
         def onRelease(event):
             # print(f'key_factory.onRelease() : {vars(event)}')
             
-            if event.key == "control":              # コントロールキーが離された
+            if event.key == "control":              # CTRLキーが離された
                 self.ctrl_press = False
+            elif event.key == "alt":                # ALTキーが離された
+                self.alt_press = False
+            elif event.key == "shift":              # SHIFTキーが離された
+                self.shift_press = False
         
         # イベントハンドラの登録
         fig = ax.get_figure()
@@ -128,20 +114,51 @@ class ZoomPan:
                 # 左ボタン
                 if event.dblclick :
                     # ダブルクリック
-                    if self.doubleclick_handler :
-                        self.doubleclick_handler(event)
+                    if self.ctrl_press : 
+                        # CTRL+ダブルクリックは何もしない
+                        pass
+                    elif self.alt_press : 
+                        # ALT+ダブルクリックは何もしない
+                        pass
+                    elif self.shift_press : 
+                        # SHIFT+ダブルクリックは何もしない
+                        pass
+                    else :
+                        handler = self.handlers.get("doubleclick")
+                        if handler :
+                            handler(event)
                 else :
                     # シングルクリック
                     # 現在の表示範囲
                     self.cur_xlim = ax.get_xlim()       # (left,right))
                     
-                    # 押された位置を記憶
-                    # x0,y0         : canvasの左下からの座標
+                    # クリックされたx座標
+                    # x0,y0         : canvas内の相対座標
                     # xdata,ydata   : データ座標
+                    # ax範囲外でもデータ座標を取得(x座標連動しているのでどこでとっても同じ)
                     if (event.xdata is not None) : 
-                        self.xpress = event.xdata
+                        xpress = event.xdata
                     else :
-                        self.xpress = self.axs[0].transData.inverted().transform((event.x, event.y))[0]
+                        xpress = self.axs[0].transData.inverted().transform((event.x, event.y))[0]
+
+                    if self.ctrl_press : 
+                        # print(f"ctrl+clicl : {xpress}")
+                        handler = self.handlers.get("ctrl_click")
+                        if handler :
+                            handler(event)
+                    elif self.alt_press : 
+                        # print(f"alt+clicl : {xpress}")
+                        handler = self.handlers.get("alt_click")
+                        if handler :
+                            handler(event)
+                    elif self.shift_press : 
+                        # print(f"shift+clicl : {xpress}")
+                        handler = self.handlers.get("shift_click")
+                        if handler :
+                            handler(event)
+                    else :
+                    # 押された位置を記憶
+                        self.xpress = xpress
 
         # マウス ボタンが離されたときのイベントハンドラ
         def onRelease(event):

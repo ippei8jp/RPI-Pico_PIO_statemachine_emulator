@@ -38,12 +38,21 @@ class Emulator_Interface(Thread):
         self.after_id = self.root.after(50, self.check)
 
         # make the frames
+        
+        left_frame_width = 400
+        mid_frame_width = 550
+        right_frame_width = 305
+        output_frame_width = 425
+        common_frame_height = 625
+        wave_frame_width = left_frame_width + mid_frame_width + right_frame_width + output_frame_width
+        wave_frame_height = 250
+        
         self.build_toolbar()
-        self.build_left_frame()
-        self.build_mid_frame()
-        self.build_right_frame()
-        self.build_output_frame()
-        self.build_wave_frame()
+        self.build_left_frame(  left_frame_width,   common_frame_height)
+        self.build_mid_frame(   mid_frame_width,    common_frame_height)
+        self.build_right_frame( right_frame_width,  common_frame_height)
+        self.build_output_frame(output_frame_width, common_frame_height)
+        self.build_wave_frame(  wave_frame_width,   wave_frame_height)
 
         # update the display to reflect the data of self.current_clock=0
         self.update_display()
