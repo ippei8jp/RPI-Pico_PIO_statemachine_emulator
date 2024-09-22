@@ -22,10 +22,16 @@ def do_sideset(self, instruction_delay_sideset):
             instruction_sideset = instruction_delay_sideset >> (5 - self.settings["sideset_count"])
             for i in range(self.settings["sideset_count"]-1):
                 value = 1 if instruction_sideset & (1 << i) else 0
+                pin_number = (self.settings["sideset_base"] + i) % 32
                 if self.settings["sideset_pindirs"]:
-                    self.GPIO_data["GPIO_pindirs"][(self.settings["sideset_base"] + i) % 32] = value
+                    self.GPIO_data["GPIO_pindirs"][pin_number] = value
                 else:
-                    self.GPIO_data["GPIO_sideset"][(self.settings["sideset_base"] + i) % 32] = value
+                    self.GPIO_data["GPIO_sideset"][pin_number] = value
+                    if self.GPIO_data["GPIO_pindirs"][pin_number] == 0: # pindir must be an output (0)
+                        self.GPIO_data["GPIO"][pin_number] = value
+                    else :
+                        self.sm_warning_messages.append("Warning: GPIO "+str(pin_number)+" set by 'sideset' is not an output, continuing\n")
+                        
         else :
             # MSBがセットされていなければside_set設定なし
             pass
@@ -45,9 +51,14 @@ def do_sideset(self, instruction_delay_sideset):
         instruction_sideset = instruction_delay_sideset >> (5 - self.settings["sideset_count"])
         for i in range(self.settings["sideset_count"]):
             value = 1 if instruction_sideset & (1 << i) else 0
+            pin_number = (self.settings["sideset_base"] + i) % 32
             if self.settings["sideset_pindirs"]:
-                self.GPIO_data["GPIO_pindirs"][(self.settings["sideset_base"] + i) % 32] = value
+                self.GPIO_data["GPIO_pindirs"][pin_number] = value
             else:
-                self.GPIO_data["GPIO_sideset"][(self.settings["sideset_base"] + i) % 32] = value
+                self.GPIO_data["GPIO_sideset"][pin_number] = value
+                if self.GPIO_data["GPIO_pindirs"][pin_number] == 0: # pindir must be an output (0)
+                    self.GPIO_data["GPIO"][pin_number] = value
+                else :
+                    self.sm_warning_messages.append("Warning: GPIO "+str(pin_number)+" set by 'sideset' is not an output, continuing\n")
     
     self.set_all_GPIO() # TODO: is this correct? the datasheet says that the sideset is done before the instruction.

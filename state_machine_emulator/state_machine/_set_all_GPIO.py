@@ -1,5 +1,6 @@
 def set_all_GPIO(self):
     """ sets the GPIO according to the changes in the time step; there is a specific priority order to out, set, sideset and external """
+    """
     # first 'out' and 'set' values (lowest priority)
     for pin in range(self.settings["out_base"], self.settings["out_count"] + self.settings["out_base"]):
         if self.GPIO_data["GPIO_out"][pin] != -1:
@@ -29,7 +30,7 @@ def set_all_GPIO(self):
                     self.GPIO_data["GPIO"][pin] = self.GPIO_data["GPIO_sideset"][pin]
                 else:
                     self.sm_warning_messages.append("Warning: GPIO "+str(pin)+" set by 'sideset' is not an output, continuing\n")
-
+    """
     # finally, externally driven pins, highest priority
     for pin in range(32):
         if self.GPIO_data["GPIO_external"][pin] != -1:

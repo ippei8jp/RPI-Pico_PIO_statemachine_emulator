@@ -239,7 +239,12 @@ def execute_out(self, instruction):
         if self.settings["out_base"] == -1:
             self.sm_warning_messages.append("Warning: 'out_base' isn't set before use in OUT instruction, continuing\n")
         for pin in range(bit_count):
-            self.GPIO_data["GPIO_out"][(self.settings["out_base"] + pin) % 32] = 1 if value & (1 << pin) else 0
+            pin_number = (self.settings["out_base"] + pin) % 32
+            self.GPIO_data["GPIO_out"][pin_number] = 1 if value & (1 << pin) else 0
+            if self.GPIO_data["GPIO_pindirs"][pin_number] != 1:
+                self.GPIO_data["GPIO"][pin_number] = 1 if value & (1 << pin) else 0
+            else :
+                self.sm_warning_messages.append("Warning: GPIO "+str(pin_number)+" set by 'out' is not an output, continuing\n")
     elif destination == 1:   # X
         self.vars["x"] = value
     elif destination == 2:   # Y
@@ -387,7 +392,12 @@ def execute_mov(self, instruction):
         if self.settings["out_count"] == -1:
             self.sm_warning_messages.append("Warning: 'out_count' isn't set before use in MOV instruction, continuing\n")
         for pin in range(self.settings["out_count"]):
-            self.GPIO_data["GPIO_out"][(self.settings["out_base"] + pin) % 32] = 1 if value & (1 << pin) else 0
+            pin_number = (self.settings["out_base"] + pin) % 32
+            self.GPIO_data["GPIO_out"][pin_number] = 1 if value & (1 << pin) else 0
+            if self.GPIO_data["GPIO_pindirs"][pin_number] != 1:
+                self.GPIO_data["GPIO"][pin_number] = 1 if value & (1 << pin) else 0
+            else :
+                self.sm_warning_messages.append("Warning: GPIO "+str(pin_number)+" set by 'out' is not an output, continuing\n")
             # self.set_GPIO('out', (self.settings["out_base"] + pin) % 32, value & (1 << pin))
     elif destination == 1:   # X
         self.vars["x"] = value
@@ -463,7 +473,12 @@ def execute_set(self, instruction):
             self.sm_warning_messages.append("Warning: 'set_count' isn't set before use in SET instruction, continuing\n")
         else:
             for pin in range(self.settings["set_count"]):
-                self.GPIO_data["GPIO_set"][(self.settings["set_base"] + pin) % 32] = 1 if data & (1 << pin) else 0
+                pin_number = (self.settings["set_base"] + pin) % 32
+                self.GPIO_data["GPIO_set"][pin_number] = 1 if data & (1 << pin) else 0
+                if self.GPIO_data["GPIO_pindirs"][pin_number] != 1:
+                    self.GPIO_data["GPIO"][pin_number] = 1 if data & (1 << pin) else 0
+                else :
+                    self.sm_warning_messages.append("Warning: GPIO "+str(pin_number)+" set by 'out' is not an output, continuing\n")
                 # self.set_GPIO('set', ((self.settings["set_base"] + pin) % 32), data & (1 << pin))
     elif destination == 1:      # X
         self.vars["x"] = data
