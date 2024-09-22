@@ -356,7 +356,7 @@ if __name__ == "__main__":
         elif input_file_mode == file_mode.dir :
             program_definitions, c_program, pin_program = load_pioasm_program(pio_filename, STATEMACHINE_NUMBER)
         elif input_file_mode == file_mode.pioasm :
-            program_definitions, c_program, pin_program = load_pioasm_program(pio_filename)
+            program_definitions, c_program, pin_program = load_pioasm_program(pio_filename, STATEMACHINE_NUMBER)
             # statemachine numberはpioプログラムファイル内で指定する
         else :
             print("unknown file type")
