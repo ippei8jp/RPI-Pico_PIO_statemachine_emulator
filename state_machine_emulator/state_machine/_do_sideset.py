@@ -6,6 +6,7 @@ def do_sideset(self, instruction_delay_sideset):
     if self.settings["sideset_opt"]:
         # check if the MSB is set
         if instruction_delay_sideset & 0x10:
+            """
             # do the side step for sideset_count bits after the MSB
             # note: sideset_count includes the optional bit!
             for i in range(self.settings["sideset_count"]-1):
@@ -16,7 +17,20 @@ def do_sideset(self, instruction_delay_sideset):
                     self.GPIO_data["GPIO_pindirs"][(self.settings["sideset_base"] + i) % 32] = value
                 else:
                     self.GPIO_data["GPIO_sideset"][(self.settings["sideset_base"] + i) % 32] = value
+            """
+            # sidesetパターン取り出し
+            instruction_sideset = instruction_delay_sideset >> (5 - self.settings["sideset_count"])
+            for i in range(self.settings["sideset_count"]-1):
+                value = 1 if instruction_sideset & (1 << i) else 0
+                if self.settings["sideset_pindirs"]:
+                    self.GPIO_data["GPIO_pindirs"][(self.settings["sideset_base"] + i) % 32] = value
+                else:
+                    self.GPIO_data["GPIO_sideset"][(self.settings["sideset_base"] + i) % 32] = value
+        else :
+            # MSBがセットされていなければside_set設定なし
+            pass
     else:  # sideset is mandatory
+        """
         for i in range(self.settings["sideset_count"]):
             test_ss_bit = 5-i-1
             # if the bit is set, the GPIO (or pindir) has to be set; if not: clear the GPIO/pindir
@@ -26,4 +40,14 @@ def do_sideset(self, instruction_delay_sideset):
                 self.GPIO_data["GPIO_pindirs"][(self.settings["sideset_base"] + i) % 32] = value
             else:
                 self.GPIO_data["GPIO_sideset"][(self.settings["sideset_base"] + i) % 32] = value
+        """
+        # sidesetパターン取り出し
+        instruction_sideset = instruction_delay_sideset >> (5 - self.settings["sideset_count"])
+        for i in range(self.settings["sideset_count"]):
+            value = 1 if instruction_sideset & (1 << i) else 0
+            if self.settings["sideset_pindirs"]:
+                self.GPIO_data["GPIO_pindirs"][(self.settings["sideset_base"] + i) % 32] = value
+            else:
+                self.GPIO_data["GPIO_sideset"][(self.settings["sideset_base"] + i) % 32] = value
+    
     self.set_all_GPIO() # TODO: is this correct? the datasheet says that the sideset is done before the instruction.
