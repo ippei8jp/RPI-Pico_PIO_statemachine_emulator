@@ -17,6 +17,9 @@ import pathlib
 import importlib
 import json
 
+from distutils.util import strtobool
+
+
 from interface import Emulator_Interface
 from emulation import emulation
 # configで設定していた内容はコマンドラインオプションに移動
@@ -93,55 +96,129 @@ def process_file_pin_program(filename, pin_program):
         allowed_parts1 = ['GPIO'+str(i) for i in range(32)]
         allowed_parts1.append('all')
         with open(filename, 'r') as pin_program_file:
-            for line in pin_program_file:
+            prev_time = 0   # 前行の時間
+            for n, line in enumerate(pin_program_file):
+                # print(f'{n+1=}, {line=}')
                 # remove all # characters and all text after it (i.e. comments)
                 line = line.split("#", 1)[0]
-                # check if the line still has some content
                 if line.strip():
-                    parts = line.split(',')
-                    parts[1] = parts[1].strip()
-                    if parts[1] in allowed_parts1:
-                        parts[0] = int(parts[0], 0)   # time at which the command should be run
-                        parts[2] = int(parts[2], 0)   # argument of the command
+                    # ','で分割して空白削除
+                    parts = [x.strip() for x in line.split(',')]
+                    
+                    if len(parts) != 3 :
+                        print(f"Warning: Incorrect number of parameters in pin_program line {n+1} : '{line.strip()}' continuing anyway")
+                        continue
+                    
+                    err = False
+                    
+                    # 1個目のパラメータ
+                    try : 
+                        # 先頭が+の場合は相対時間
+                        reltime = parts[0][0] == '+'
+                        parts[0] = int(parts[0], 0)
+                        # 相対時間の場合は前行の時間に加算
+                        if reltime :
+                            parts[0] = prev_time + parts[0]
+                    except ValueError as e:
+                        err = True
+                    
+                    # 2個目のパラメータが登録された文字列か確認
+                    if not (parts[1] in allowed_parts1) :
+                        err = True
+                    
+                    # 3個目のパラメータ
+                    try :
+                        parts[2] = int(parts[2], 0)
+                    except ValueError as e:
+                        err = True
+
+                    if not err :
                         pin_program.append(parts)
+                        # 前行の時間を更新
+                        prev_time = parts[0]
+                        # print(f'{parts}')
                     else:
-                        print("Warning: Unknown command in pin_program: ", parts, 'continuing anyway')
+                        print(f"Warning: Unknown command in pin_program line {n+1} : {parts} continuing anyway")
     except IOError as e:
         print("I/O Error reading pin program file:", e.errno, e.strerror)
     except:
         print("Error reading pin program file:", sys.exc_info()[0])
 
-
 def process_file_c_program(filename, c_program):
     """ read the c program file and parse it """
     try:
+        allowed_parts1 = [  'put', 
+                            'get', 
+                            'set_base', 
+                            'set_count', 
+                            'in_base', 
+                            'jmp_pin', 
+                            'sideset_base', 
+                            'out_base', 
+                            'out_count', 
+                            'out_shift_right', 
+                            'out_shift_autopull', 
+                            'pull_threshold', 
+                            'in_shift_right', 
+                            'in_shift_autopush', 
+                            'push_threshold', 
+                            'get_pc', 
+                            'set_pc', 
+                            'irq', 
+                            'set_N', 
+                            'status_sel', 
+                            'dir_out', 
+                            'dir_in', 
+                            'dir_non'
+                        ]
         with open(filename, 'r') as c_program_file:
-            for line in c_program_file:
+            prev_time = 0   # 前行の時間
+            for n, line in enumerate(c_program_file):
+                # print(f'{n+1=}, {line=}')
                 # remove all # characters and all text after it (i.e. comments)
                 line = line.split("#", 1)[0]
-                # check if the line still has some content
                 if line.strip():
-                    # a "c-instruction" has two or three parts:
-                    # timestamp, command, and possibly an argument of the command
-                    # the timestamp and argument must be integers/bool, the command is a (stripped) string
-                    parts = line.strip().split(',')
-                    parts[1] = parts[1].strip()
-                    # check if the command is valid 
-                    if parts[1].strip() in ['put', 'get', 'set_base', 'set_count', 'in_base', 'jmp_pin', 'sideset_base', 'out_base', 'out_count', 'out_shift_right', 'out_shift_autopull', 'pull_threshold', 'in_shift_right', 'in_shift_autopush', 'push_threshold', 'get_pc', 'set_pc', 'irq', 'set_N', 'status_sel', 'dir_out', 'dir_in', 'dir_non']:
+                    # ','で分割して空白削除
+                    parts = [x.strip() for x in line.split(',')]
+                    
+                    if len(parts) < 2 or len(parts) > 3 :
+                        print(f"Warning: Incorrect number of parameters in c_program line {n+1} : '{line.strip()}' continuing anyway")
+                        continue
+                    
+                    err = False
+                    
+                    # 1個目のパラメータ
+                    try : 
+                        # 先頭が+の場合は相対時間
+                        reltime = parts[0][0] == '+'
                         parts[0] = int(parts[0], 0)
-                        parts[1] = parts[1]
-                        if len(parts) == 3:
-                            parts[2] = parts[2].strip()
-                            # convert strings "True" and "False" to boolean, otherwise it is an int
-                            if parts[2] in ["True", "true", "Yes", "yes"]:
-                                parts[2] = True
-                            elif parts[2] in ["False", "false", "No", "no"]:
-                                parts[2] = False
-                            else:
-                                parts[2] = int(parts[2], 0)
+                        # 相対時間の場合は前行の時間に加算
+                        if reltime :
+                            parts[0] = prev_time + parts[0]
+                    except ValueError as e:
+                        err = True
+                    
+                    # 2個目のパラメータが登録された文字列か確認
+                    if not (parts[1] in allowed_parts1) :
+                        err = True
+                    
+                    if len(parts) == 3:
+                        # 3個目のパラメータ
+                        try :
+                            parts[2] = int(parts[2], 0)
+                        except ValueError as e:
+                            try :
+                                parts[2] = bool(strtobool(parts[2]))
+                            except ValueError as e:
+                                err = True
+
+                    if not err :
                         c_program.append(parts)
+                        # 前行の時間を更新
+                        prev_time = parts[0]
+                        # print(f'{parts}')
                     else:
-                        print("Warning: Unknown command in c_program: ", parts, "continuing anyway")
+                        print(f"Warning: Unknown command in c_program line {n+1} : {parts} continuing anyway")
     except IOError as e:
         print("I/O Error reading c program file:", e.errno, e.strerror)
     except:
