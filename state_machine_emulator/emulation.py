@@ -53,7 +53,11 @@ class emulation:
 
     def bit_string(self, value):
         """ function to produce a string with the binary representation of a value """
-        return str().join(["0" if (value & (1 << i)) == 0 else "1" for i in reversed(range(32))])
+        value_string = ""
+        for i in reversed(range(32)):
+            value_string += "0" if (value & (1 << i)) == 0 else "1"
+            value_string += "_" if i % 4 == 0 and i != 0 else ""   # 4桁毎に"_"を挿入
+        return value_string
 
 
     def execute_pin_and_c_program(self):
@@ -109,8 +113,10 @@ class emulation:
                         # there are items in RxFIFO
                         self.emulation_highlight_output_c_program.append(
                             len(self.emulation_output_c_program))
+                        fifo_val = self.state_machine.vars["RxFIFO"][0]
                         self.emulation_output_c_program.append(
-                            str(time) + " : " + str(self.state_machine.vars["RxFIFO"][0]) + " = " + self.bit_string(self.state_machine.vars["RxFIFO"][0]))
+                            f'{time:6d} : {self.bit_string(fifo_val)} = {fifo_val:>10d}'
+                            )
                         # shift FIFO entries 1 to 4 back one place
                         for i in range(0, 3):
                             self.state_machine.vars["RxFIFO"][i] = self.state_machine.vars["RxFIFO"][i+1]
@@ -129,7 +135,9 @@ class emulation:
                 elif c[1] == 'get_pc':
                     # note: the c_program is executed before an emulation step. Thus get_pc shows the previous pc in the gui
                     self.emulation_highlight_output_c_program.append(len(self.emulation_output_c_program))
-                    self.emulation_output_c_program.append(str(time) + " : " + "pc=" + str(self.state_machine.vars["pc"]))
+                    self.emulation_output_c_program.append(
+                        f'{time:6d} : pc = {self.state_machine.vars["pc"]:>2d}'
+                        )
                 elif c[1] == 'set_pc':
                     # note: this should (maybe) only be used at t=0, the c_program is executed before an emulation step. Thus set_pc can set the starting point
                     # note: If not set explicitly, pc = -1 at the start, so the pc first adds 1 to start at 0. Here the 1 must first be subtracted

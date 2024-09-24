@@ -42,7 +42,7 @@ class Emulator_Interface(Thread):
         left_frame_width = 400
         mid_frame_width = 550
         right_frame_width = 305
-        output_frame_width = 425
+        output_frame_width = 465
         common_frame_height = 625
         wave_frame_width = left_frame_width + mid_frame_width + right_frame_width + output_frame_width
         wave_frame_height = 250
